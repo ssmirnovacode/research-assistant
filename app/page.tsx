@@ -1,7 +1,6 @@
+import { ChatArea } from '@/components/chat/ChatArea'
+import { INITIAL_MESSAGES, INITIAL_NOTES } from '@/lib/mock-data'
+
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      research assistant
-    </div>
-  );
+  return <ChatArea initialMessages={INITIAL_MESSAGES} initialNotes={INITIAL_NOTES} />
 }
