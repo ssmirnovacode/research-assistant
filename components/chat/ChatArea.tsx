@@ -1,32 +1,65 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import type { Message, Note } from '@/lib/types'
-import { VerboseModeContext } from './VerboseModeContext'
-import { AppShell } from '@/components/layout/AppShell'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { NotesSidebar } from '@/components/sidebar/NotesSidebar'
-import { MessageList } from './MessageList'
-import { ChatInput } from './ChatInput'
+import { useState } from "react";
+import type { Message, Note } from "@/lib/types";
+import { VerboseModeContext } from "./VerboseModeContext";
+import { AppShell } from "@/components/layout/AppShell";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { NotesSidebar } from "@/components/sidebar/NotesSidebar";
+import { MessageList } from "./MessageList";
+import { ChatInput } from "./ChatInput";
 
 type Props = {
-  initialMessages: Message[]
-  initialNotes: Note[]
-}
+  initialMessages: Message[];
+  initialNotes: Note[];
+};
 
 export function ChatArea({ initialMessages, initialNotes }: Props) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages)
-  const [notes] = useState<Note[]>(initialNotes)
-  const [verboseMode, setVerboseMode] = useState(true)
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [notes] = useState<Note[]>(initialNotes);
+  const [verboseMode, setVerboseMode] = useState(true);
 
-  function handleSend(content: string) {
+  async function handleSend(content: string) {
     const userMessage: Message = {
       id: String(Date.now()),
-      role: 'user',
+      role: "user",
       content,
       timestamp: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: userMessage.content }),
+    });
+    const data = await res?.json();
+    const llmMessage: Message = {
+      id: String(Date.now()),
+      role: "agent",
+      content: "",
+      timestamp: new Date().toISOString(),
+    };
+
+    if (!data?.answer) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...llmMessage,
+          content: "ERROR",
+        },
+      ]); // @todo handle better
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...llmMessage,
+          content: data.answer,
+        },
+      ]);
     }
-    setMessages((prev) => [...prev, userMessage])
   }
 
   return (
@@ -39,5 +72,5 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
         <ChatInput onSend={handleSend} />
       </AppShell>
     </VerboseModeContext.Provider>
-  )
+  );
 }

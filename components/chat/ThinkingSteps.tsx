@@ -1,35 +1,38 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import type { ThinkingStep as ThinkingStepType } from '@/lib/types'
-import { ThinkingStep } from './ThinkingStep'
-import { useVerboseMode } from './VerboseModeContext'
+import { useState } from "react";
+import type { ThinkingStep as ThinkingStepType } from "@/lib/types";
+import { ThinkingStep } from "./ThinkingStep";
+import { useVerboseMode } from "./VerboseModeContext";
 
 type Props = {
-  steps: ThinkingStepType[]
-}
+  steps: ThinkingStepType[];
+};
 
 export function ThinkingSteps({ steps }: Props) {
-  const verboseMode = useVerboseMode()
-  const [isOpen, setIsOpen] = useState(false)
+  const verboseMode = useVerboseMode();
+  const [isOpen, setIsOpen] = useState(false);
 
-  if (!verboseMode || steps.length === 0) return null
+  if (!verboseMode || !steps?.length) return null;
 
   return (
     <div
       className="rounded-lg border mb-3 overflow-hidden text-sm"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface-2)' }}
+      style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
     >
       <button
         onClick={() => setIsOpen((v) => !v)}
         className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity"
-        style={{ color: 'var(--muted)' }}
+        style={{ color: "var(--muted)" }}
       >
         <div className="flex items-center gap-2">
           <span>Agent thinking</span>
           <span
             className="px-1.5 py-0.5 rounded text-xs font-medium"
-            style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
+            style={{
+              background: "var(--accent-subtle)",
+              color: "var(--accent)",
+            }}
           >
             {steps.length} steps
           </span>
@@ -43,7 +46,10 @@ export function ThinkingSteps({ steps }: Props) {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+          style={{
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s",
+          }}
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
@@ -51,7 +57,7 @@ export function ThinkingSteps({ steps }: Props) {
       {isOpen && (
         <div
           className="px-3 pb-3 flex flex-col gap-3 border-t"
-          style={{ borderColor: 'var(--border)' }}
+          style={{ borderColor: "var(--border)" }}
         >
           <div className="pt-2" />
           {steps.map((step, i) => (
@@ -60,5 +66,5 @@ export function ThinkingSteps({ steps }: Props) {
         </div>
       )}
     </div>
-  )
+  );
 }
