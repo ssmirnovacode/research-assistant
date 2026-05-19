@@ -1,11 +1,17 @@
+'use client'
+
+import { useState } from 'react'
 import type { Note } from '@/lib/types'
 import { NoteCard } from './NoteCard'
+import { NoteModal } from './NoteModal'
 
 type Props = {
   notes: Note[]
 }
 
 export function NotesSidebar({ notes }: Props) {
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+
   return (
     <div className="flex flex-col h-full">
       <div
@@ -30,11 +36,12 @@ export function NotesSidebar({ notes }: Props) {
         ) : (
           <ul className="flex flex-col gap-2">
             {notes.map((note) => (
-              <NoteCard key={note.id} note={note} />
+              <NoteCard key={note.id} note={note} onClick={() => setSelectedNote(note)} />
             ))}
           </ul>
         )}
       </div>
+      <NoteModal note={selectedNote} onClose={() => setSelectedNote(null)} />
     </div>
   )
 }
