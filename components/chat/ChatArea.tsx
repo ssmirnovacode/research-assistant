@@ -20,6 +20,7 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [notes] = useState<Note[]>(initialNotes);
   const [verboseMode, setVerboseMode] = useState(true);
+  const [isThinking, setIsThinking] = useState(false);
 
   async function handleSend(content: string) {
     const userMessage: Message = {
@@ -30,38 +31,45 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message: userMessage.content, threadId }),
-    });
-    const data = await res?.json();
-    const llmMessage: Message = {
-      id: String(Date.now()),
-      role: "agent",
-      content: "",
-      timestamp: new Date().toISOString(),
-    };
+    setIsThinking(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: userMessage.content, threadId }),
+      });
+      const data = await res?.json();
+      const llmMessage: Message = {
+        id: String(Date.now()),
+        role: "agent",
+        content: "",
+        timestamp: new Date().toISOString(),
+      };
 
-    if (!data?.answer) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...llmMessage,
-          content: "ERROR",
-        },
-      ]); // @todo handle better
-    } else {
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...llmMessage,
-          content: data.answer,
-          sources: data.sources ?? [],
-        },
-      ]);
+      if (!data?.answer) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...llmMessage,
+            content: "ERROR",
+          },
+        ]); // @todo handle better
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...llmMessage,
+            content: data.answer,
+            sources: data.sources ?? [],
+          },
+        ]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsThinking(false);
     }
   }
 
@@ -71,8 +79,8 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
         sidebar={<NotesSidebar notes={notes} />}
         header={<AppHeader onToggleVerbose={() => setVerboseMode((v) => !v)} />}
       >
-        <MessageList messages={messages} />
-        <ChatInput onSend={handleSend} />
+        <MessageList messages={messages} isThinking={isThinking} />
+        <ChatInput onSend={handleSend} disabled={isThinking} />
       </AppShell>
     </VerboseModeContext.Provider>
   );

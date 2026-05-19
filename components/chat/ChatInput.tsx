@@ -5,14 +5,15 @@ import type { KeyboardEvent } from 'react'
 
 type Props = {
   onSend: (value: string) => void
+  disabled?: boolean
 }
 
-export function ChatInput({ onSend }: Props) {
+export function ChatInput({ onSend, disabled }: Props) {
   const [value, setValue] = useState('')
 
   function handleSend() {
     const trimmed = value.trim()
-    if (!trimmed) return
+    if (!trimmed || disabled) return
     onSend(trimmed)
     setValue('')
   }
@@ -38,9 +39,10 @@ export function ChatInput({ onSend }: Props) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask a research question…"
+            placeholder={disabled ? 'Thinking…' : 'Ask a research question…'}
+            disabled={disabled}
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm outline-none leading-relaxed py-1.5 placeholder:opacity-50"
+            className="flex-1 resize-none bg-transparent text-sm outline-none leading-relaxed py-1.5 placeholder:opacity-50 disabled:cursor-not-allowed"
             style={{
               color: 'var(--foreground)',
               fieldSizing: 'content' as never,
@@ -49,12 +51,12 @@ export function ChatInput({ onSend }: Props) {
           />
           <button
             onClick={handleSend}
-            disabled={!value.trim()}
+            disabled={!value.trim() || disabled}
             className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity mb-0.5"
             style={{
-              background: value.trim() ? 'var(--accent)' : 'var(--surface-2)',
-              color: value.trim() ? 'white' : 'var(--muted)',
-              cursor: value.trim() ? 'pointer' : 'default',
+              background: value.trim() && !disabled ? 'var(--accent)' : 'var(--surface-2)',
+              color: value.trim() && !disabled ? 'white' : 'var(--muted)',
+              cursor: value.trim() && !disabled ? 'pointer' : 'default',
             }}
           >
             <svg
