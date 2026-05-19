@@ -5,10 +5,15 @@ import { tavily } from "@tavily/core";
 export const webSearch = tool(
   async ({ query }) => {
     const client = tavily({ apiKey: process.env.TAVILY_API_KEY });
-    console.log(process.env.TAVILY_API_KEY);
+
     const searchResult = await client.search(query);
-    console.log({ searchResult });
-    return searchResult;
+    // Format results into a clean string the agent can reason over
+    const formatted = searchResult.results
+      .map((r, i) => `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.content}`)
+      .join("\n\n---\n\n");
+
+    console.log({ tavily: formatted });
+    return formatted || "No results found.";
   },
   {
     name: "web_search",

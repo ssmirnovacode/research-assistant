@@ -57,6 +57,7 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
         {
           ...llmMessage,
           content: data.answer,
+          sources: data.sources ?? [],
         },
       ]);
     }
