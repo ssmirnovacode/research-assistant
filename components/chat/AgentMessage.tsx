@@ -1,6 +1,7 @@
 import type { Source, ThinkingStep } from "@/lib/types";
 import ReactMarkdown from "react-markdown";
 import { ThinkingSteps } from "./ThinkingSteps";
+import { fixTableRowsMd, formatTime } from "@/lib/helpers";
 
 type Props = {
   content: string;
@@ -8,13 +9,6 @@ type Props = {
   sources: Source[];
   thinkingSteps: ThinkingStep[];
 };
-
-function formatTime(iso: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(iso));
-}
 
 export function AgentMessage({
   content,
@@ -134,7 +128,7 @@ export function AgentMessage({
               ),
             }}
           >
-            {content}
+            {fixTableRowsMd(content)}
           </ReactMarkdown>
         </div>
         {/* {sources?.length > 0 && (
