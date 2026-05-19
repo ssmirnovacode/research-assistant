@@ -25,6 +25,16 @@ For conversational messages that do not require new information, answer directly
   `,
 });
 
+export async function* streamAgent(message: string, threadId: string) {
+  const eventStream = agent.streamEvents(
+    { messages: [{ role: "user", content: message }] },
+    { version: "v2", configurable: { thread_id: threadId } },
+  );
+  for await (const event of eventStream) {
+    yield event as Record<string, unknown>;
+  }
+}
+
 export async function callAgent(message: string, threadId: string) {
   try {
     return await agent.invoke(

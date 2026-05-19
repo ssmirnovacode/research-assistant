@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Message, Note } from "@/lib/types";
 import { useThreadId } from "@/hooks/use-thread-id";
+import { extractSources, stripSourcesSection, stripThinkingBlocks, parseAgentStream } from "@/lib/helpers";
 import { VerboseModeContext } from "./VerboseModeContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -30,44 +31,87 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
       timestamp: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const placeholderId = String(Date.now() + 1);
+    const placeholderMessage: Message = {
+      id: placeholderId,
+      role: "agent",
+      content: "",
+      timestamp: new Date().toISOString(),
+      thinkingSteps: [],
+      sources: [],
+    };
+
+    setMessages((prev) => [...prev, userMessage, placeholderMessage]);
     setIsThinking(true);
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: userMessage.content, threadId }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: content, threadId }),
       });
-      const data = await res?.json();
-      const llmMessage: Message = {
-        id: String(Date.now()),
-        role: "agent",
-        content: "",
-        timestamp: new Date().toISOString(),
-      };
 
-      if (!data?.answer) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...llmMessage,
-            content: "ERROR",
-          },
-        ]); // @todo handle better
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...llmMessage,
-            content: data.answer,
-            sources: data.sources ?? [],
-          },
-        ]);
+      if (!res.ok) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === placeholderId ? { ...m, content: "ERROR" } : m
+          )
+        );
+        return;
       }
+
+      await parseAgentStream(res, {
+        onStep: (step) => {
+          setIsThinking(false);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === placeholderId && m.role === "agent"
+                ? { ...m, thinkingSteps: [...(m.thinkingSteps ?? []), step] }
+                : m
+            )
+          );
+        },
+        onDelta: (delta) => {
+          setIsThinking(false);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === placeholderId && m.role === "agent"
+                ? { ...m, content: m.content + delta }
+                : m
+            )
+          );
+        },
+        onDone: (fullAnswer) => {
+          const cleaned = stripThinkingBlocks(fullAnswer);
+          const sources = extractSources(cleaned);
+          const answer = sources.length ? stripSourcesSection(cleaned) : cleaned;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === placeholderId && m.role === "agent"
+                ? { ...m, content: answer, sources }
+                : m
+            )
+          );
+        },
+        onError: () => {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === placeholderId && m.role === "agent"
+                ? { ...m, content: "ERROR" }
+                : m
+            )
+          );
+        },
+      });
     } catch (err) {
       console.error(err);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === placeholderId && m.role === "agent"
+            ? { ...m, content: "ERROR" }
+            : m
+        )
+      );
     } finally {
       setIsThinking(false);
     }

@@ -1,36 +1,53 @@
-import { callAgent } from "@/lib/agent";
-import { extractSources, stripSourcesSection } from "@/lib/helpers";
-import { NextResponse } from "next/server";
+import { streamAgent } from "@/lib/agent";
+import { encodeSSEFrame, eventToTextDelta, eventToThinkingStep } from "@/lib/helpers";
 
 export async function POST(request: Request) {
-  const res = await request.json();
+  const body = await request.json();
+  const { message, threadId } = body;
 
-  if (!res) return; // @todo handle
+  if (!message) return new Response("No message provided", { status: 400 });
 
-  const { message, threadId } = res;
+  const encoder = new TextEncoder();
 
-  if (!message) {
-    console.error("no message provided!");
-    return new Response("No message provided", { status: 400 });
-  }
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        // Suppress model stream tokens while a tool call is in flight.
+        // This prevents intermediate "planning" tokens (the model deciding which
+        // tool to call) from leaking into the answer stream. Once all tools are
+        // done, or if no tools are used at all, tokens flow through normally.
+        let activeToolCalls = 0;
 
-  let response;
-  try {
-    response = await callAgent(message, threadId);
-  } catch {
-    return new Response("Agent error", { status: 500 });
-  }
+        for await (const event of streamAgent(message, threadId)) {
+          if (event.event === "on_tool_start") activeToolCalls++;
+          else if (event.event === "on_tool_end") activeToolCalls = Math.max(0, activeToolCalls - 1);
 
-  if (!response?.messages) {
-    console.error("an error occured in agent call");
-    return new Response("Agent doesnt respond", { status: 400 });
-  }
+          const step = eventToThinkingStep(event);
+          if (step) {
+            controller.enqueue(encodeSSEFrame({ type: "step", step }, encoder));
+            continue;
+          }
 
-  const lastMessage = response.messages[response.messages.length - 1];
-  const content = lastMessage.content as string;
+          if (activeToolCalls === 0) {
+            const delta = eventToTextDelta(event);
+            if (delta) controller.enqueue(encodeSSEFrame({ type: "delta", delta }, encoder));
+          }
+        }
+        controller.enqueue(encodeSSEFrame({ type: "done" }, encoder));
+      } catch (err) {
+        console.error(err);
+        controller.enqueue(encodeSSEFrame({ type: "error" }, encoder));
+      } finally {
+        controller.close();
+      }
+    },
+  });
 
-  const sources = extractSources(content);
-  const answer = sources.length > 0 ? stripSourcesSection(content) : content;
-
-  return NextResponse.json({ answer, sources });
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
 }
