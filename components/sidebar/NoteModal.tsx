@@ -4,20 +4,12 @@ import { useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Note } from "@/lib/types";
 import { markdownComponents } from "@/lib/markdownComponents";
+import { formatTime } from "@/lib/helpers";
 
 type Props = {
   note: Note | null;
   onClose: () => void;
 };
-
-function formatTime(iso: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(iso));
-}
 
 export function NoteModal({ note, onClose }: Props) {
   useEffect(() => {

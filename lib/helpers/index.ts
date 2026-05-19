@@ -1,3 +1,3 @@
 export * from "./webSearchHelpers";
-export * from "./formating";
+export * from "./formatting";
 export * from "./agentHelpers";

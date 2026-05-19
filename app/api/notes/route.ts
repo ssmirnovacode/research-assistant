@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   let response;
   try {
     response = await callAgent(
-      `Please summarize and save the following in notes: ${text}`,
+      `Save the following as a note: "${text}"`,
       randomUUID(), // to isolate instruction for note
     );
   } catch {
