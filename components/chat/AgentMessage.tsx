@@ -1,21 +1,26 @@
+import { useRef } from "react";
 import type { Source, ThinkingStep } from "@/lib/types";
 import ReactMarkdown from "react-markdown";
 import { ThinkingSteps } from "./ThinkingSteps";
+import { SelectionPopover } from "./SelectionPopover";
 import { fixTableRowsMd, formatTime } from "@/lib/helpers";
 
 type Props = {
   content: string;
   timestamp: string;
-  sources: Source[];
-  thinkingSteps: ThinkingStep[];
+  sources?: Source[];
+  thinkingSteps?: ThinkingStep[];
+  onSaveSelection: (text: string) => void;
 };
 
 export function AgentMessage({
   content,
   timestamp,
-  sources,
   thinkingSteps,
+  onSaveSelection,
 }: Props) {
+  const contentRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className="flex gap-3 max-w-2xl">
       <div
@@ -37,8 +42,10 @@ export function AgentMessage({
         </svg>
       </div>
       <div className="flex flex-col gap-1 flex-1">
-        <ThinkingSteps steps={thinkingSteps} />
+        <ThinkingSteps steps={thinkingSteps ?? []} />
+        <SelectionPopover containerRef={contentRef} onSaveSelection={onSaveSelection} />
         <div
+          ref={contentRef}
           className="rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed"
           style={{ background: "var(--surface-1)" }}
         >

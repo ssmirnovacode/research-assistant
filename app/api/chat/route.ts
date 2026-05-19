@@ -1,6 +1,7 @@
 import { callAgent } from "@/lib/agent";
 import { extractSources, stripSourcesSection } from "@/lib/helpers";
 import { NextResponse } from "next/server";
+import type { BaseMessage } from "@langchain/core/messages";
 
 export async function POST(request: Request) {
   const res = await request.json();
@@ -32,5 +33,28 @@ export async function POST(request: Request) {
   const sources = extractSources(content);
   const answer = sources.length > 0 ? stripSourcesSection(content) : content;
 
-  return NextResponse.json({ answer, sources });
+  // Extract saved note content if the agent called saveNote in THIS turn only.
+  // response.messages contains the full thread history (MemorySaver), so we
+  // scope the search to messages added after the last human message.
+  const allMsgs: BaseMessage[] = response.messages;
+  const lastHumanIdx = allMsgs.reduce(
+    (acc: number, m: BaseMessage, i: number) =>
+      m.type === "human" ? i : acc,
+    -1
+  );
+  const currentTurnMsgs = lastHumanIdx >= 0 ? allMsgs.slice(lastHumanIdx + 1) : allMsgs;
+  const saveNoteMsg = currentTurnMsgs.findLast((m: BaseMessage) => (m as BaseMessage & { name?: string }).name === "saveNote");
+  let savedNote: string | null = null;
+  if (saveNoteMsg) {
+    try {
+      const parsed = JSON.parse(saveNoteMsg.content as string);
+      if (parsed?.saved && typeof parsed.content === "string") {
+        savedNote = parsed.content;
+      }
+    } catch {
+      // malformed tool output — skip
+    }
+  }
+
+  return NextResponse.json({ answer, sources, savedNote });
 }

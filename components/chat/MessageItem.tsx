@@ -6,9 +6,10 @@ import { GuardrailMessage } from './GuardrailMessage'
 
 type Props = {
   message: Message
+  onSaveSelection: (text: string) => void
 }
 
-export function MessageItem({ message }: Props) {
+export function MessageItem({ message, onSaveSelection }: Props) {
   if (message.role === 'greeting') {
     return <GreetingMessage content={message.content} />
   }
@@ -24,6 +25,7 @@ export function MessageItem({ message }: Props) {
         timestamp={message.timestamp}
         sources={message.sources}
         thinkingSteps={message.thinkingSteps}
+        onSaveSelection={onSaveSelection}
       />
     )
   }
