@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Message, Note } from "@/lib/types";
+import { useThreadId } from "@/hooks/use-thread-id";
 import { VerboseModeContext } from "./VerboseModeContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function ChatArea({ initialMessages, initialNotes }: Props) {
+  const threadId = useThreadId();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [notes] = useState<Note[]>(initialNotes);
   const [verboseMode, setVerboseMode] = useState(true);
@@ -33,7 +35,7 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message: userMessage.content }),
+      body: JSON.stringify({ message: userMessage.content, threadId }),
     });
     const data = await res?.json();
     const llmMessage: Message = {

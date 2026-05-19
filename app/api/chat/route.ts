@@ -1,45 +1,25 @@
-import { agent } from "@/lib/agent";
-import type { Source } from "@/lib/types";
+import { callAgent } from "@/lib/agent";
+import { extractSources, stripSourcesSection } from "@/lib/helpers";
 import { NextResponse } from "next/server";
-
-function extractSources(content: string): Source[] {
-  const sourcesMatch = content.match(
-    /^##\s+Sources\s*\n([\s\S]*?)(?=\n##\s|\n---\s*$|$)/m
-  );
-  if (!sourcesMatch) return [];
-
-  const block = sourcesMatch[1];
-  const sources: Source[] = [];
-  const linkRegex = /\[([^\]]+)\]\((https:\/\/[^)]+)\)/g;
-  let match;
-  while ((match = linkRegex.exec(block)) !== null) {
-    sources.push({ title: match[1], url: match[2] });
-  }
-  return sources;
-}
-
-function stripSourcesSection(content: string): string {
-  return content
-    .replace(/\n?---\n##\s+Sources[\s\S]*$/, "")
-    .replace(/\n?##\s+Sources[\s\S]*$/, "")
-    .trimEnd();
-}
 
 export async function POST(request: Request) {
   const res = await request.json();
 
   if (!res) return; // @todo handle
 
-  const { message } = res;
+  const { message, threadId } = res;
 
   if (!message) {
     console.error("no message provided!");
     return new Response("No message provided", { status: 400 });
   }
 
-  const response = await agent.invoke({
-    messages: [{ role: "user", content: message }],
-  });
+  let response;
+  try {
+    response = await callAgent(message, threadId);
+  } catch {
+    return new Response("Agent error", { status: 500 });
+  }
 
   if (!response?.messages) {
     console.error("an error occured in agent call");
