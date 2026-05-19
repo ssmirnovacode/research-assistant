@@ -69,6 +69,7 @@ export function ChatArea({ initialMessages }: Props) {
         if (data.savedNote) {
           addNote(data.savedNote);
         }
+
       }
     } catch (err) {
       console.error(err);
@@ -78,9 +79,31 @@ export function ChatArea({ initialMessages }: Props) {
   }
 
   async function handleSaveSelection(selectedText: string) {
-    await handleSend(
-      `Please summarize and save the following in notes: ${selectedText}`
-    );
+    const userMessage: Message = {
+      id: String(Date.now()),
+      role: "user",
+      content: `Save selected text as a note: "${selectedText}"`,
+      timestamp: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    try {
+      const res = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: selectedText, threadId }),
+      });
+      if (!res.ok) {
+        console.error("Failed to save note", await res.text());
+        return;
+      }
+      const data = await res.json();
+      if (data.savedNote) {
+        addNote(data.savedNote);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
