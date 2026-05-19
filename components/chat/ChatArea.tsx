@@ -109,7 +109,7 @@ export function ChatArea({ initialMessages }: Props) {
   return (
     <VerboseModeContext.Provider value={verboseMode}>
       <AppShell
-        sidebar={<NotesSidebar notes={notes} />}
+        sidebar={<NotesSidebar notes={notes} onAddNote={addNote} />}
         header={<AppHeader onToggleVerbose={() => setVerboseMode((v) => !v)} />}
       >
         <MessageList
