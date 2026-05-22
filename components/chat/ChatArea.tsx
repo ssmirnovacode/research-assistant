@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import type { Message, Note } from "@/lib/types";
+import type { Message } from "@/lib/types";
 import { useThreadId } from "@/hooks/use-thread-id";
+import { useNotes } from "@/hooks/use-notes";
 import { VerboseModeContext } from "./VerboseModeContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,13 +13,12 @@ import { ChatInput } from "./ChatInput";
 
 type Props = {
   initialMessages: Message[];
-  initialNotes: Note[];
 };
 
-export function ChatArea({ initialMessages, initialNotes }: Props) {
+export function ChatArea({ initialMessages }: Props) {
   const threadId = useThreadId();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [notes] = useState<Note[]>(initialNotes);
+  const { notes, addNote } = useNotes();
   const [verboseMode, setVerboseMode] = useState(true);
   const [isThinking, setIsThinking] = useState(false);
 
@@ -65,6 +65,11 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
             sources: data.sources ?? [],
           },
         ]);
+
+        if (data.savedNote) {
+          addNote(data.savedNote);
+        }
+
       }
     } catch (err) {
       console.error(err);
@@ -73,13 +78,45 @@ export function ChatArea({ initialMessages, initialNotes }: Props) {
     }
   }
 
+  async function handleSaveSelection(selectedText: string) {
+    const userMessage: Message = {
+      id: String(Date.now()),
+      role: "user",
+      content: `Save selected text as a note: "${selectedText}"`,
+      timestamp: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    try {
+      const res = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: selectedText, threadId }),
+      });
+      if (!res.ok) {
+        console.error("Failed to save note", await res.text());
+        return;
+      }
+      const data = await res.json();
+      if (data.savedNote) {
+        addNote(data.savedNote);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   return (
     <VerboseModeContext.Provider value={verboseMode}>
       <AppShell
-        sidebar={<NotesSidebar notes={notes} />}
+        sidebar={<NotesSidebar notes={notes} onAddNote={addNote} />}
         header={<AppHeader onToggleVerbose={() => setVerboseMode((v) => !v)} />}
       >
-        <MessageList messages={messages} isThinking={isThinking} />
+        <MessageList
+          messages={messages}
+          isThinking={isThinking}
+          onSaveSelection={handleSaveSelection}
+        />
         <ChatInput onSend={handleSend} disabled={isThinking} />
       </AppShell>
     </VerboseModeContext.Provider>

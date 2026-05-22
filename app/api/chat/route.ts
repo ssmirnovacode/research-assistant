@@ -1,5 +1,5 @@
 import { callAgent } from "@/lib/agent";
-import { extractSources, stripSourcesSection } from "@/lib/helpers";
+import { extractSources, stripSourcesSection, extractSavedNote } from "@/lib/helpers";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -31,6 +31,7 @@ export async function POST(request: Request) {
 
   const sources = extractSources(content);
   const answer = sources.length > 0 ? stripSourcesSection(content) : content;
+  const savedNote = extractSavedNote(response.messages);
 
-  return NextResponse.json({ answer, sources });
+  return NextResponse.json({ answer, sources, savedNote });
 }

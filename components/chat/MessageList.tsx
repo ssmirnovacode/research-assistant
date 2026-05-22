@@ -7,9 +7,10 @@ import { MessageItem } from './MessageItem'
 type Props = {
   messages: Message[]
   isThinking: boolean
+  onSaveSelection: (text: string) => void
 }
 
-export function MessageList({ messages, isThinking }: Props) {
+export function MessageList({ messages, isThinking, onSaveSelection }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export function MessageList({ messages, isThinking }: Props) {
     <div className="flex-1 overflow-y-auto px-4 py-6">
       <div className="max-w-3xl mx-auto flex flex-col gap-5">
         {messages.map((message) => (
-          <MessageItem key={message.id} message={message} />
+          <MessageItem key={message.id} message={message} onSaveSelection={onSaveSelection} />
         ))}
         {isThinking && (
           <div className="flex gap-3 max-w-2xl">
