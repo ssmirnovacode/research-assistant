@@ -10,9 +10,10 @@ type Props = {
   notes: Note[]
   onAddNote: (content: string) => void
   onDeleteNote: (id: string) => void
+  onEditNote: (id: string, content: string) => void
 }
 
-export function NotesSidebar({ notes, onAddNote, onDeleteNote }: Props) {
+export function NotesSidebar({ notes, onAddNote, onDeleteNote, onEditNote }: Props) {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [isCreating, setIsCreating] = useState(false)
 
@@ -45,6 +46,7 @@ export function NotesSidebar({ notes, onAddNote, onDeleteNote }: Props) {
                 note={note}
                 onClick={() => setSelectedNote(note)}
                 onDelete={() => onDeleteNote(note.id)}
+                onEdit={(content) => onEditNote(note.id, content)}
               />
             ))}
           </ul>

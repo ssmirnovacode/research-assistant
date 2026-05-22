@@ -18,7 +18,7 @@ type Props = {
 export function ChatArea({ initialMessages }: Props) {
   const threadId = useThreadId();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const { notes, addNote, deleteNote } = useNotes();
+  const { notes, addNote, deleteNote, editNote } = useNotes();
   const [verboseMode, setVerboseMode] = useState(true);
   const [isThinking, setIsThinking] = useState(false);
 
@@ -109,7 +109,7 @@ export function ChatArea({ initialMessages }: Props) {
   return (
     <VerboseModeContext.Provider value={verboseMode}>
       <AppShell
-        sidebar={<NotesSidebar notes={notes} onAddNote={addNote} onDeleteNote={deleteNote} />}
+        sidebar={<NotesSidebar notes={notes} onAddNote={addNote} onDeleteNote={deleteNote} onEditNote={editNote} />}
         header={<AppHeader onToggleVerbose={() => setVerboseMode((v) => !v)} />}
       >
         <MessageList
