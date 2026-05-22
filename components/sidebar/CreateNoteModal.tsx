@@ -63,7 +63,7 @@ export function CreateNoteModal({ isOpen, onClose, onSave }: Props) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Write your note…"
-            className="w-full resize-none rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1"
+            className="w-full resize-none rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 scrollbar-dark"
             style={{
               background: 'var(--surface-2)',
               borderColor: 'var(--border)',

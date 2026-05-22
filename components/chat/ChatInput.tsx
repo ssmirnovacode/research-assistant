@@ -42,7 +42,7 @@ export function ChatInput({ onSend, disabled }: Props) {
             placeholder={disabled ? 'Thinking…' : 'Ask a research question…'}
             disabled={disabled}
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm outline-none leading-relaxed py-1.5 placeholder:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 resize-none bg-transparent text-sm outline-none leading-relaxed py-1.5 placeholder:opacity-50 disabled:cursor-not-allowed scrollbar-dark"
             style={{
               color: 'var(--foreground)',
               fieldSizing: 'content' as never,

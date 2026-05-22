@@ -33,7 +33,7 @@ export function NotesSidebar({ notes, onAddNote, onDeleteNote, onEditNote }: Pro
           </span>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-y-auto scrollbar-dark p-3">
         {notes.length === 0 ? (
           <p className="text-xs text-center mt-6" style={{ color: 'var(--muted)' }}>
             No notes yet. Ask the agent to save a finding.
