@@ -8,7 +8,7 @@ export const INITIAL_MESSAGES: Message[] = [
     id: "1",
     role: "greeting",
     content:
-      "Hello! I'm your AI research assistant. I can search the web, summarize sources, and help you build a research dossier. Ask me anything about science, history, technology, or literature — and I'll find the latest findings for you.",
+      "Hello! I'm your AI research assistant. I can search the web, summarize sources, and help you build a research dossier. Ask me anything about science, history, technology, or literature — and I will find the latest findings for you.",
     timestamp: "",
   },
 ];
