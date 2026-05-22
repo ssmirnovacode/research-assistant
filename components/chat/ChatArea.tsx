@@ -9,6 +9,8 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { NotesSidebar } from "@/components/sidebar/NotesSidebar";
 import { MessageList } from "./MessageList";
 import { ChatInput } from "./ChatInput";
+import { LimitBanner } from "./LimitBanner";
+import { useSessionLimit } from "@/hooks/use-session-limit";
 
 type Props = {
   initialMessages: Message[];
@@ -19,8 +21,11 @@ export function ChatArea({ initialMessages }: Props) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const { notes, addNote, deleteNote, editNote } = useNotes();
   const [isThinking, setIsThinking] = useState(false);
+  const { canSend, resetAt, recordSend } = useSessionLimit();
 
   async function handleSend(content: string) {
+    if (!canSend) return;
+
     const userMessage: Message = {
       id: String(Date.now()),
       role: "user",
@@ -29,6 +34,7 @@ export function ChatArea({ initialMessages }: Props) {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    recordSend();
     setIsThinking(true);
     try {
       const res = await fetch("/api/chat", {
@@ -114,7 +120,8 @@ export function ChatArea({ initialMessages }: Props) {
         isThinking={isThinking}
         onSaveSelection={handleSaveSelection}
       />
-      <ChatInput onSend={handleSend} disabled={isThinking} />
+      {!canSend && resetAt !== null && <LimitBanner resetAt={resetAt} />}
+      <ChatInput onSend={handleSend} disabled={isThinking || !canSend} />
     </AppShell>
   );
 }

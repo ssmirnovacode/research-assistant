@@ -14,6 +14,10 @@ export async function POST(request: Request) {
     return new Response("No message provided", { status: 400 });
   }
 
+  if (message.length > 2000) {
+    return new Response("Message too long", { status: 400 });
+  }
+
   let response;
   try {
     response = await callAgent(message, threadId);
