@@ -3,17 +3,14 @@
 import { useState } from "react";
 import type { ThinkingStep as ThinkingStepType } from "@/lib/types";
 import { ThinkingStep } from "./ThinkingStep";
-import { useVerboseMode } from "./VerboseModeContext";
-
 type Props = {
   steps: ThinkingStepType[];
 };
 
 export function ThinkingSteps({ steps }: Props) {
-  const verboseMode = useVerboseMode();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!verboseMode || !steps?.length) return null;
+  if (!steps?.length) return null;
 
   return (
     <div

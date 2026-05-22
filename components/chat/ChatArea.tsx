@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { Message } from "@/lib/types";
 import { useThreadId } from "@/hooks/use-thread-id";
 import { useNotes } from "@/hooks/use-notes";
-import { VerboseModeContext } from "./VerboseModeContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { NotesSidebar } from "@/components/sidebar/NotesSidebar";
@@ -19,7 +18,6 @@ export function ChatArea({ initialMessages }: Props) {
   const threadId = useThreadId();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const { notes, addNote, deleteNote, editNote } = useNotes();
-  const [verboseMode, setVerboseMode] = useState(true);
   const [isThinking, setIsThinking] = useState(false);
 
   async function handleSend(content: string) {
@@ -107,18 +105,16 @@ export function ChatArea({ initialMessages }: Props) {
   }
 
   return (
-    <VerboseModeContext.Provider value={verboseMode}>
-      <AppShell
-        sidebar={<NotesSidebar notes={notes} onAddNote={addNote} onDeleteNote={deleteNote} onEditNote={editNote} />}
-        header={<AppHeader onToggleVerbose={() => setVerboseMode((v) => !v)} />}
-      >
-        <MessageList
-          messages={messages}
-          isThinking={isThinking}
-          onSaveSelection={handleSaveSelection}
-        />
-        <ChatInput onSend={handleSend} disabled={isThinking} />
-      </AppShell>
-    </VerboseModeContext.Provider>
+    <AppShell
+      sidebar={<NotesSidebar notes={notes} onAddNote={addNote} onDeleteNote={deleteNote} onEditNote={editNote} />}
+      header={<AppHeader />}
+    >
+      <MessageList
+        messages={messages}
+        isThinking={isThinking}
+        onSaveSelection={handleSaveSelection}
+      />
+      <ChatInput onSend={handleSend} disabled={isThinking} />
+    </AppShell>
   );
 }

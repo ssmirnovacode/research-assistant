@@ -3,12 +3,13 @@ import { MemorySaver } from "@langchain/langgraph";
 import { webSearch } from "./tools/webSearch";
 import { saveNote } from "./tools/saveNote";
 import { systemPrompt } from "./prompts";
+import { HAIKU } from "./constants";
 
 const checkpointer = new MemorySaver();
 
 export const agent = createAgent({
-  model: "claude-sonnet-4-6",
-  tools: [saveNote],
+  model: HAIKU,
+  tools: [webSearch, saveNote],
   checkpointer,
   systemPrompt,
 });
