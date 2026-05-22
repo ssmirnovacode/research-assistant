@@ -15,7 +15,7 @@ A chat-based research assistant that answers factual questions by searching the 
 | Framework | Next.js 16 (App Router) |
 | UI | React 19, Tailwind CSS v4 |
 | AI agent | LangChain + LangGraph (`createAgent`, `MemorySaver`) |
-| LLM | Claude Sonnet 4.6 via Anthropic API |
+| LLM | Haiku 4.5 via Anthropic API |
 | Web search | Tavily API |
 | Language | TypeScript |
 
