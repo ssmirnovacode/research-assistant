@@ -1,4 +1,6 @@
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
+
+const redis = Redis.fromEnv();
 
 const MINUTE_LIMIT = 10;
 const DAY_LIMIT = 50;
@@ -10,12 +12,12 @@ export async function checkRateLimit(ip: string): Promise<RateLimitResult> {
   const dayKey = `rl:day:${ip}`;
 
   const [minCount, dayCount] = await Promise.all([
-    kv.incr(minKey),
-    kv.incr(dayKey),
+    redis.incr(minKey),
+    redis.incr(dayKey),
   ]);
 
-  if (minCount === 1) await kv.expire(minKey, 60);
-  if (dayCount === 1) await kv.expire(dayKey, 86400);
+  if (minCount === 1) await redis.expire(minKey, 60);
+  if (dayCount === 1) await redis.expire(dayKey, 86400);
 
   if (minCount > MINUTE_LIMIT || dayCount > DAY_LIMIT) {
     return { allowed: false };
