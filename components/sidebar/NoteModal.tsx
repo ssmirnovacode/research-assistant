@@ -50,7 +50,7 @@ export function NoteModal({ note, onClose }: Props) {
             ×
           </button>
         </div>
-        <div className="overflow-y-auto px-4 py-3 text-sm leading-relaxed">
+        <div className="overflow-y-auto scrollbar-dark px-4 py-3 text-sm leading-relaxed">
           <ReactMarkdown components={markdownComponents}>
             {note.content}
           </ReactMarkdown>
