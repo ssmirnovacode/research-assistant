@@ -14,7 +14,7 @@ function loadNotes(): Note[] {
   }
 }
 
-export function useNotes(): { notes: Note[]; addNote: (content: string) => void } {
+export function useNotes(): { notes: Note[]; addNote: (content: string) => void; deleteNote: (id: string) => void } {
   const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
@@ -38,5 +38,9 @@ export function useNotes(): { notes: Note[]; addNote: (content: string) => void 
     setNotes((prev) => [note, ...prev]);
   }
 
-  return { notes, addNote };
+  function deleteNote(id: string) {
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+  }
+
+  return { notes, addNote, deleteNote };
 }

@@ -9,9 +9,10 @@ import { CreateNoteModal } from './CreateNoteModal'
 type Props = {
   notes: Note[]
   onAddNote: (content: string) => void
+  onDeleteNote: (id: string) => void
 }
 
-export function NotesSidebar({ notes, onAddNote }: Props) {
+export function NotesSidebar({ notes, onAddNote, onDeleteNote }: Props) {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [isCreating, setIsCreating] = useState(false)
 
@@ -39,7 +40,12 @@ export function NotesSidebar({ notes, onAddNote }: Props) {
         ) : (
           <ul className="flex flex-col gap-2">
             {notes.map((note) => (
-              <NoteCard key={note.id} note={note} onClick={() => setSelectedNote(note)} />
+              <NoteCard
+                key={note.id}
+                note={note}
+                onClick={() => setSelectedNote(note)}
+                onDelete={() => onDeleteNote(note.id)}
+              />
             ))}
           </ul>
         )}
